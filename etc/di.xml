@@ -1,10 +1,21 @@
 <?xml version="1.0" ?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-	<type name="Magento\Framework\Console\CommandList">
-		<arguments>
-			<argument name="commands" xsi:type="array">
-				<item name="import" xsi:type="object">SeleneSoftware\MagicCardImporter\Console\Command\Import</item>
-			</argument>
-		</arguments>
-	</type>
+    <type name="Magento\Framework\Console\CommandList">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="import" xsi:type="object">SeleneSoftware\MagicCardImporter\Console\Command\Import</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="SeleneSoftware\MagicCardImporter\Console\Command\Import">
+        <arguments>
+            <argument name="httpClient" xsi:type="object">Symfony\Component\HttpClient\HttpClient</argument>
+            <argument name="state" xsi:type="object">Magento\Framework\App\State</argument>
+            <argument name="productFactory" xsi:type="object">Magento\Catalog\Model\ProductFactory</argument>
+            <argument name="productRepository" xsi:type="object">Magento\Catalog\Api\ProductRepositoryInterface</argument>
+            <argument name="productTypeConfigurable" xsi:type="object">Magento\ConfigurableProduct\Model\Product\Type\Configurable</argument>
+            <argument name="status" xsi:type="object">Magento\Catalog\Model\Product\Attribute\Source\Status</argument>
+            <argument name="visibility" xsi:type="object">Magento\Catalog\Model\Product\Visibility</argument>
+        </arguments>
+    </type>
 </config>
