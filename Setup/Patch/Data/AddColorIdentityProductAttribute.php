@@ -16,7 +16,6 @@ use Magento\Framework\Setup\Patch\PatchRevertableInterface;
 
 class AddColorIdentityProductAttribute implements DataPatchInterface, PatchRevertableInterface
 {
-
     /**
      * @var ModuleDataSetupInterface
      */
@@ -70,12 +69,12 @@ class AddColorIdentityProductAttribute implements DataPatchInterface, PatchRever
                 'visible_on_front' => true,
                 'unique' => false,
                 'apply_to' => '',
-                'group' => 'General',
+                'group' => 'Magic Cards',
                 'used_in_product_listing' => true,
                 'is_used_in_grid' => true,
                 'is_visible_in_grid' => false,
                 'is_filterable_in_grid' => false,
-                'option' => array('values' => array(""))
+                'option' => array('values' => array('White','Blue','Black','Red',''))
             ]
         );
 
@@ -106,8 +105,7 @@ class AddColorIdentityProductAttribute implements DataPatchInterface, PatchRever
     public static function getDependencies()
     {
         return [
-        
+
         ];
     }
 }
-

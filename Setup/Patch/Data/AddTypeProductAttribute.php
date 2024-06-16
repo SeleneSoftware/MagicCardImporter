@@ -16,7 +16,6 @@ use Magento\Framework\Setup\Patch\PatchRevertableInterface;
 
 class AddTypeProductAttribute implements DataPatchInterface, PatchRevertableInterface
 {
-
     /**
      * @var ModuleDataSetupInterface
      */
@@ -70,7 +69,7 @@ class AddTypeProductAttribute implements DataPatchInterface, PatchRevertableInte
                 'visible_on_front' => false,
                 'unique' => false,
                 'apply_to' => 'simple',
-                'group' => 'General',
+                'group' => 'Magic Cards',
                 'used_in_product_listing' => true,
                 'is_used_in_grid' => true,
                 'is_visible_in_grid' => false,
@@ -106,8 +105,7 @@ class AddTypeProductAttribute implements DataPatchInterface, PatchRevertableInte
     public static function getDependencies()
     {
         return [
-        
+
         ];
     }
 }
-

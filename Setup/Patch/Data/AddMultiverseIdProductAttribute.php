@@ -16,7 +16,6 @@ use Magento\Framework\Setup\Patch\PatchRevertableInterface;
 
 class AddMultiverseIdProductAttribute implements DataPatchInterface, PatchRevertableInterface
 {
-
     /**
      * @var ModuleDataSetupInterface
      */
@@ -70,7 +69,7 @@ class AddMultiverseIdProductAttribute implements DataPatchInterface, PatchRevert
                 'visible_on_front' => false,
                 'unique' => false,
                 'apply_to' => '',
-                'group' => 'General',
+                'group' => 'Magic Cards',
                 'used_in_product_listing' => false,
                 'is_used_in_grid' => true,
                 'is_visible_in_grid' => false,
@@ -106,8 +105,7 @@ class AddMultiverseIdProductAttribute implements DataPatchInterface, PatchRevert
     public static function getDependencies()
     {
         return [
-        
+
         ];
     }
 }
-

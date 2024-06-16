@@ -16,6 +16,16 @@
             <argument name="productTypeConfigurable" xsi:type="object">Magento\ConfigurableProduct\Model\Product\Type\Configurable</argument>
             <argument name="status" xsi:type="object">Magento\Catalog\Model\Product\Attribute\Source\Status</argument>
             <argument name="visibility" xsi:type="object">Magento\Catalog\Model\Product\Visibility</argument>
+            <argument name="createCategory" xsi:type="object">SeleneSoftware\MagicCardImporter\Service\CreateCategoryService</argument>
+            <argument name="attributeRepository" xsi:type="object">Magento\Catalog\Api\ProductAttributeRepositoryInterface</argument>
+        </arguments>
+    </type>
+    <type name="SeleneSoftware\MagicCardImporter\Service\CreateCategoryService">
+        <arguments>
+            <argument name="storeManager" xsi:type="object">Magento\Store\Model\StoreManagerInterface</argument>
+            <argument name="categoryCollectionFactory" xsi:type="object">Magento\Catalog\Model\ResourceModel\Category\CollectionFactory</argument>
+            <argument name="categoryRepository" xsi:type="object">Magento\Catalog\Model\CategoryRepository</argument>
+            <argument name="logger" xsi:type="object">Psr\Log\LoggerInterface</argument>
         </arguments>
     </type>
 </config>

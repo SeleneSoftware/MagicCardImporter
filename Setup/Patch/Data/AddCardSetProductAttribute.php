@@ -12,11 +12,11 @@ use Magento\Eav\Setup\EavSetup;
 use Magento\Eav\Setup\EavSetupFactory;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
+use Symfony\Component\HttpClient\HttpClient;
 use Magento\Framework\Setup\Patch\PatchRevertableInterface;
 
 class AddCardSetProductAttribute implements DataPatchInterface, PatchRevertableInterface
 {
-
     /**
      * @var ModuleDataSetupInterface
      */
@@ -26,6 +26,7 @@ class AddCardSetProductAttribute implements DataPatchInterface, PatchRevertableI
      */
     private $eavSetupFactory;
 
+    private $httpClient;
     /**
      * Constructor
      *
@@ -33,9 +34,11 @@ class AddCardSetProductAttribute implements DataPatchInterface, PatchRevertableI
      * @param EavSetupFactory $eavSetupFactory
      */
     public function __construct(
+        HttpClient $httpClient,
         ModuleDataSetupInterface $moduleDataSetup,
         EavSetupFactory $eavSetupFactory
     ) {
+        $this->httpClient = $httpClient;
         $this->moduleDataSetup = $moduleDataSetup;
         $this->eavSetupFactory = $eavSetupFactory;
     }
@@ -45,6 +48,19 @@ class AddCardSetProductAttribute implements DataPatchInterface, PatchRevertableI
      */
     public function apply()
     {
+
+
+        $response = $this->httpClient->create()->request(
+            'GET',
+            'https://api.scryfall.com/sets'
+        );
+
+        $content = $response->toArray();
+        $setValues = [];
+        foreach ($content['data'] as $set) {
+            $setValues[] = $set['name'];
+        }
+
         $this->moduleDataSetup->getConnection()->startSetup();
         /** @var EavSetup $eavSetup */
         $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
@@ -70,12 +86,12 @@ class AddCardSetProductAttribute implements DataPatchInterface, PatchRevertableI
                 'visible_on_front' => false,
                 'unique' => false,
                 'apply_to' => '',
-                'group' => 'General',
+                'group' => 'Magic Cards',
                 'used_in_product_listing' => true,
                 'is_used_in_grid' => true,
                 'is_visible_in_grid' => false,
                 'is_filterable_in_grid' => false,
-                'option' => array('values' => array(""))
+                'option' => array('values' => $setValues),
             ]
         );
 
@@ -106,8 +122,7 @@ class AddCardSetProductAttribute implements DataPatchInterface, PatchRevertableI
     public static function getDependencies()
     {
         return [
-        
+
         ];
     }
 }
-

@@ -14,7 +14,7 @@ use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\Setup\Patch\PatchRevertableInterface;
 
-class AddTypeLineProductAttribute implements DataPatchInterface, PatchRevertableInterface
+class AddMtgAttributeSet implements DataPatchInterface, PatchRevertableInterface
 {
     /**
      * @var ModuleDataSetupInterface
@@ -44,41 +44,6 @@ class AddTypeLineProductAttribute implements DataPatchInterface, PatchRevertable
      */
     public function apply()
     {
-        $this->moduleDataSetup->getConnection()->startSetup();
-        /** @var EavSetup $eavSetup */
-        $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
-        $eavSetup->addAttribute(
-            \Magento\Catalog\Model\Product::ENTITY,
-            'type_line',
-            [
-                'type' => 'varchar',
-                'label' => 'Type Line',
-                'input' => 'text',
-                'source' => '',
-                'frontend' => '',
-                'required' => false,
-                'backend' => '',
-                'sort_order' => '30',
-                'global' => ScopedAttributeInterface::SCOPE_STORE,
-                'default' => null,
-                'visible' => true,
-                'user_defined' => true,
-                'searchable' => false,
-                'filterable' => false,
-                'comparable' => false,
-                'visible_on_front' => false,
-                'unique' => false,
-                'apply_to' => '',
-                'group' => 'Magic Cards',
-                'used_in_product_listing' => false,
-                'is_used_in_grid' => true,
-                'is_visible_in_grid' => false,
-                'is_filterable_in_grid' => false,
-                'option' => array('values' => array(""))
-            ]
-        );
-
-        $this->moduleDataSetup->getConnection()->endSetup();
     }
 
     public function revert()
@@ -86,7 +51,7 @@ class AddTypeLineProductAttribute implements DataPatchInterface, PatchRevertable
         $this->moduleDataSetup->getConnection()->startSetup();
         /** @var EavSetup $eavSetup */
         $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
-        $eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'type_line');
+        $eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'color_identity');
 
         $this->moduleDataSetup->getConnection()->endSetup();
     }

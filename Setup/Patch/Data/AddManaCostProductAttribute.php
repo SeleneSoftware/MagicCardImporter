@@ -16,7 +16,6 @@ use Magento\Framework\Setup\Patch\PatchRevertableInterface;
 
 class AddManaCostProductAttribute implements DataPatchInterface, PatchRevertableInterface
 {
-
     /**
      * @var ModuleDataSetupInterface
      */
@@ -70,7 +69,7 @@ class AddManaCostProductAttribute implements DataPatchInterface, PatchRevertable
                 'visible_on_front' => true,
                 'unique' => false,
                 'apply_to' => '',
-                'group' => 'General',
+                'group' => 'Magic Cards',
                 'used_in_product_listing' => true,
                 'is_used_in_grid' => true,
                 'is_visible_in_grid' => false,
@@ -106,8 +105,7 @@ class AddManaCostProductAttribute implements DataPatchInterface, PatchRevertable
     public static function getDependencies()
     {
         return [
-        
+
         ];
     }
 }
-
