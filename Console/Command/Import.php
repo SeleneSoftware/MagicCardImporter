@@ -189,7 +189,15 @@ class Import extends Command
 
         // Assign associated products to configurable product
         $configurableProduct->setConfigurableProductsData($associatedProducts);
-        $configurableProduct->setCustomAttributes([
+        // $configurableProduct->setCustomAttributes([
+        //     'card_set' => $data['set_name'],
+        //     'mana_cost' => $data['mana_cost'],
+        //     'color_identy' => $data['color_identity'],
+        //     'collector_number' => $data['collector_number'],
+        //     'type_line' => $data['type_line'],
+        // ]);
+
+        $configurableProduct->addData([
             'card_set' => $data['set_name'],
             'mana_cost' => $data['mana_cost'],
             'color_identy' => $data['color_identity'],
