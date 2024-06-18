@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace SeleneSoftware\MagicCardImporter\Service;
 
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use Magento\Catalog\Model\CategoryRepository;
-use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 class CreateCategoryService
@@ -40,12 +40,8 @@ class CreateCategoryService
           ->getFirstItem();
 
         if ($category->getId()) {
-            // var_dump($category);
-            // var_dump(get_class_methods($category));
-            // var_dump($category->getParentCategory());
             return $category;
         }
-
 
         try {
             if (!is_null($parentCat)) {
@@ -57,6 +53,7 @@ class CreateCategoryService
             }
         } catch (NoSuchEntityException $noSuchEntityException) {
             $this->logger->error('This is an error while getting rootCategory');
+
             return $category;
         }
 
@@ -65,11 +62,11 @@ class CreateCategoryService
           ->setName($categoryName)
           ->setIsActive(true);
 
-
         try {
             $this->categoryRepository->save($category);
         } catch (CouldNotSaveException $couldNotSaveException) {
             $this->logger->error('This is an error while saving category');
+
             return $category;
         }
 

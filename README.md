@@ -37,6 +37,21 @@ Import Cards and pricing from Scryfall API
 
 ## Configuration
 
+Nothing to configure
+
+## Usage
+
+Running the base command ```magic:import``` will just output a list of all available sets on Scryfall.  Issuing a set code after the command, ```magic:import roe``` (Rise of the Eldrazi), will pull all the card data and create the product information for each card in the set.
+
+## Issues
+
+Currently, there are a few things that need some work:
+ - There are custom attributes for the cards, but I want to create an attribute set and include them all.  Currently, these custom attributes will get attached to all product in the store.
+ - Custom Attributes are not populating properly when the product is created.  This needs to be fixed.
+ - The category is created when the import is running, but it won't put it under the "Magic: the Gathering" category.  Need to figure out how to move it properly.
+ - Images.  I haven't gotten around to it yet.
+
+If you think you can solve one of these issues, pull requests will be welcomed at https://github.com/SeleneSoftware/MagicCardImporter
 
 
 

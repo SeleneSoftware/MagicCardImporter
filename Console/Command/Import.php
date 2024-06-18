@@ -7,21 +7,18 @@ declare(strict_types=1);
 
 namespace SeleneSoftware\MagicCardImporter\Console\Command;
 
+use Magento\Catalog\Api\ProductAttributeRepositoryInterface;
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\Catalog\Model\Product\Visibility;
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Framework\App\State;
+use Magento\Framework\Exception\NoSuchEntityException;
+use SeleneSoftware\MagicCardImporter\Service\CreateCategoryService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpClient\HttpClient;
-use Magento\Framework\App\State;
-use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
-use Magento\Catalog\Model\Product\Attribute\Source\Status;
-use Magento\Catalog\Model\Product\Visibility;
-use SeleneSoftware\MagicCardImporter\Service\CreateCategoryService;
-use Magento\Catalog\Api\ProductAttributeRepositoryInterface;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Api\AttributeValue;
 
 class Import extends Command
 {
@@ -30,13 +27,21 @@ class Import extends Command
     protected $output;
 
     private $httpClient;
+
     protected $_state;
+
     protected $_productFactory;
+
     protected $_productRepository;
+
     protected $_productTypeConfigurable;
+
     protected $_status;
+
     protected $_attributeRepository;
+
     protected $_visibility;
+
     protected $_createCategory;
 
     public function __construct(
@@ -63,11 +68,8 @@ class Import extends Command
         parent::__construct();
     }
 
-    public const SET_ARGUMENT = "set";
+    public const SET_ARGUMENT = 'set';
 
-    /**
-     * {@inheritdoc}
-     */
     protected function execute(
         InputInterface $input,
         OutputInterface $output
@@ -84,14 +86,13 @@ class Import extends Command
 
             $content = $response->toArray();
             foreach ($content['data'] as $set) {
-                $output->writeln($set['code'] . ' - ' . $set['name']);
+                $output->writeln($set['code'].' - '.$set['name']);
             }
 
             $output->writeln('<error>Please include a Set Code to Import Cards From.</error>');
 
             return Command::FAILURE;
         }
-
 
         $response = $this->httpClient->create()->request(
             'GET',
@@ -108,23 +109,23 @@ class Import extends Command
         );
 
         foreach ($response->toArray()['data'] as $card) {
-            $this->createProduct($card, (int)$category->getId());
+            $this->createProduct($card, (int) $category->getId());
             // $this->output->writeln("Card $card['name'] has been imported.");
         }
+
         return Command::SUCCESS;
 
     }
 
     private function createProduct(array $data, int $catid): bool
     {
-        if ($data['object'] != 'card') {
+        if ('card' != $data['object']) {
             return false;
         }
         // Check if configurable product exists
         $configurableProductSku = "mtg_{$data['set']}_".str_pad($data['collector_number'], 3, '0', STR_PAD_LEFT); // SKU will be in format mtg_set_colnum
         // $configurableProductSku = 'card';
         try {
-            // var_dump($configurableProductSku);
             $configurableProduct = $this->_productRepository->get($configurableProductSku);
 
         } catch (NoSuchEntityException $e) {
@@ -132,12 +133,11 @@ class Import extends Command
             $configurableProduct = $this->_productFactory->create();
         } catch (\Exception $e) {
             $this->output->writeln('Configurable product already exists.');
+
             // $this->output->writeln($e->getMessage());
             return false;
         }
-        // var_dump(get_class_methods($configurableProduct));
-        // var_dump($configurableProduct->getCustomAttributes());
-        // die('foop');
+
         // Create configurable product
         $configurableProduct->setTypeId(Configurable::TYPE_CODE)
                             ->setAttributeSetId($configurableProduct->getDefaultAttributeSetId())
@@ -154,8 +154,6 @@ class Import extends Command
 
         // Set other configurable product attributes
         // ...
-        // var_dump($data);
-        // die('cunt');
 
         // Associate simple products
         $associatedProducts = [
@@ -169,6 +167,7 @@ class Import extends Command
                 $simpleProduct = $this->_productFactory->create();
             } catch (\Exception $e) {
                 $this->output->writeln($e->getMessage());
+
                 return false;
             }
             if ($simpleProduct->getId()) {
@@ -182,55 +181,30 @@ class Import extends Command
             }
         }
 
-        if (count($associatedProducts) === 0) {
+        if (0 === count($associatedProducts)) {
             $this->output->writeln('Error: No associated products found.');
+
             return false;
         }
-        // var_dump(get_class($configurableProduct));
-        // die('balls');
 
-        $attribute = $this->_attributeRepository->get('card_set');
-        foreach ($attribute->getOptions() as $opt) {
-            if ($opt->getLabel() === $data['set_name']) {
-                $value = $opt;
-            }
-        }
-        $configurableAttributesData = [
-            'card_set' => [
-                'id' =>    $attribute->getAttributeId(),
-                'values' => $opt,
-            ]
-        ]; // Array of configurable attributes and their options
-        // var_dump($configurableProduct->getCustomAttributes());
-        // var_dump(get_class_methods($configgurableProduct));
-        // die('daft cunt');
-        $attribute = new AttributeValue();
-        $attribute->setAttributeCode('card_set');
-        $attribute->setValue($value);
         // Assign associated products to configurable product
         $configurableProduct->setConfigurableProductsData($associatedProducts);
-        $configurableProduct->setCustomAttribute($attribute);
-        // $configurableProduct->setConfigurableAttributesData($configurableAttributesData);
+        $configurableProduct->setCustomAttributes([
+            'card_set' => $data['set_name'],
+            'mana_cost' => $data['mana_cost'],
+            'color_identy' => $data['color_identity'],
+            'collector_number' => $data['collector_number'],
+            'type_line' => $data['type_line'],
+        ]);
 
         try {
             $this->_productRepository->save($configurableProduct);
-            $this->output->writeln('Configurable product created successfully.');
+            // $this->output->writeln('Configurable product created successfully.');
         } catch (\Exception $e) {
-            $this->output->writeln('Error: ' . $e->getMessage());
+            $this->output->writeln('Error: '.$e->getMessage());
         }
 
         return true;
-    }
-
-    protected function getCustomAttribute(string $customAttributeCode): array
-    {
-        // $customAttributeCode = 'card_set';
-        $attribute = $this->_attributeRepository->get($customAttributeCode);
-        $customAttributeId = $attribute->getAttributeId();
-        // var_dump(get_class_methods($attribute));
-        var_dump($attribute->getOptions());
-        die('shit');
-        return [$customAttributeId];
     }
 
     protected function createCategory(string $cat)
@@ -243,18 +217,16 @@ class Import extends Command
         $content = $response->toArray();
 
         $parent = $this->_createCategory->execute('Magic: the Gathering');
+
         return $this->_createCategory->execute($content['name'], $parent);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function configure()
     {
-        $this->setName("magic:import");
-        $this->setDescription("Imports cards from Scryfall");
+        $this->setName('magic:import');
+        $this->setDescription('Imports cards from Scryfall');
         $this->setDefinition([
-            new InputArgument(self::SET_ARGUMENT, InputArgument::OPTIONAL, "Set Code"),
+            new InputArgument(self::SET_ARGUMENT, InputArgument::OPTIONAL, 'Set Code'),
         ]);
         parent::configure();
     }
