@@ -14,22 +14,20 @@ use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\Setup\Patch\PatchRevertableInterface;
 
-class AddTypeProductAttribute implements DataPatchInterface, PatchRevertableInterface
+class AddCardTypeProductAttribute implements DataPatchInterface, PatchRevertableInterface
 {
     /**
      * @var ModuleDataSetupInterface
      */
     private $moduleDataSetup;
+
     /**
      * @var EavSetupFactory
      */
     private $eavSetupFactory;
 
     /**
-     * Constructor
-     *
-     * @param ModuleDataSetupInterface $moduleDataSetup
-     * @param EavSetupFactory $eavSetupFactory
+     * Constructor.
      */
     public function __construct(
         ModuleDataSetupInterface $moduleDataSetup,
@@ -39,9 +37,6 @@ class AddTypeProductAttribute implements DataPatchInterface, PatchRevertableInte
         $this->eavSetupFactory = $eavSetupFactory;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function apply()
     {
         $this->moduleDataSetup->getConnection()->startSetup();
@@ -49,33 +44,53 @@ class AddTypeProductAttribute implements DataPatchInterface, PatchRevertableInte
         $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
         $eavSetup->addAttribute(
             \Magento\Catalog\Model\Product::ENTITY,
-            'type',
+            'card_type',
             [
-                'type' => 'int',
-                'label' => 'Type',
+                'type' => 'varchar',
+                'label' => 'Card Type',
                 'input' => 'select',
-                'source' => '',
-                'frontend' => '',
-                'required' => false,
-                'backend' => '',
-                'sort_order' => '30',
-                'global' => ScopedAttributeInterface::SCOPE_STORE,
-                'default' => null,
+                'source' => 'Vendor\ModuleName\Model\Config\Source\CardType', // Source model for options
+                'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
                 'visible' => true,
+                'required' => false,
                 'user_defined' => true,
-                'searchable' => true,
-                'filterable' => true,
+                'searchable' => false,
+                'filterable' => false,
                 'comparable' => false,
-                'visible_on_front' => false,
-                'unique' => false,
-                'apply_to' => 'simple',
-                'group' => 'Magic Cards',
+                'visible_on_front' => true,
                 'used_in_product_listing' => true,
-                'is_used_in_grid' => true,
-                'is_visible_in_grid' => false,
-                'is_filterable_in_grid' => false,
-                'option' => array('values' => array("Standard","Foil","Showcase","Scroll"))
+                'unique' => false,
+                'apply_to' => '',
+                'group' => 'Magic Cards',
+                'backend' => '',
             ]
+            // 'card_type',
+            // [
+            //     'type' => 'int',
+            //     'label' => 'Card Type',
+            //     'input' => 'select',
+            //     'source' => '',
+            //     'frontend' => '',
+            //     'required' => false,
+            //     'backend' => '',
+            //     'sort_order' => '30',
+            //     'global' => ScopedAttributeInterface::SCOPE_STORE,
+            //     'default' => null,
+            //     'visible' => true,
+            //     'user_defined' => true,
+            //     'searchable' => true,
+            //     'filterable' => true,
+            //     'comparable' => true,
+            //     'visible_on_front' => false,
+            //     'unique' => true,
+            //     'apply_to' => 'simple',
+            //     'group' => 'Magic Cards',
+            //     'used_in_product_listing' => true,
+            //     'is_used_in_grid' => true,
+            //     'is_visible_in_grid' => false,
+            //     'is_filterable_in_grid' => false,
+            //     'option' => ['values' => ['Standard', 'Foil', 'Showcase', 'Scroll']],
+            // ]
         );
 
         $this->moduleDataSetup->getConnection()->endSetup();
@@ -86,22 +101,16 @@ class AddTypeProductAttribute implements DataPatchInterface, PatchRevertableInte
         $this->moduleDataSetup->getConnection()->startSetup();
         /** @var EavSetup $eavSetup */
         $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
-        $eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'type');
+        $eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'card_type');
 
         $this->moduleDataSetup->getConnection()->endSetup();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getAliases()
     {
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getDependencies()
     {
         return [

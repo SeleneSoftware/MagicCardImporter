@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace SeleneSoftware\MagicCardImporter\Console\Command;
 
 use Magento\Catalog\Api\ProductAttributeRepositoryInterface;
+use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
@@ -102,15 +103,27 @@ class Import extends Command
         $category = $this->createCategory($name);
         $this->output->writeln("Category $name has been created.");
 
+        $this->parseSetData($response->toArray()['search_uri'], $category);
+
+        return Command::SUCCESS;
+    }
+
+    private function parseSetData(string $url, Category $category)
+    {
         // We get the search uri from the api for a set so we can pull the card data, hence the next request right away.
         $response = $this->httpClient->create()->request(
             'GET',
-            $response->toArray()['search_uri']
+            $url
+            // $response->toArray()['search_uri']
         );
 
         foreach ($response->toArray()['data'] as $card) {
             $this->createProduct($card, (int) $category->getId());
             // $this->output->writeln("Card $card['name'] has been imported.");
+        }
+
+        if ($response->toArray()['has_more']) {
+            $this->parseSetData($response->toArray()['next_page'], $category);
         }
 
         return Command::SUCCESS;
@@ -143,11 +156,10 @@ class Import extends Command
                             ->setAttributeSetId($configurableProduct->getDefaultAttributeSetId())
                             ->setSku($configurableProductSku)
                             ->setName($data['name'])
-                            ->setPrice(1)
+                            ->setPrice($data['prices']['usd'])
                             ->setStatus(Status::STATUS_ENABLED)
-                        // ->setStatus($this->_status->getProductStatus(Status::STATUS_ENABLED))
                             ->setVisibility($this->_visibility->getOptionId(Visibility::VISIBILITY_BOTH))
-                            ->setUrlKey(str_replace(' ', '-', $data['name']))
+                            ->setUrlKey(str_replace(' ', '-', $data['name']).'-'.$configurableProductSku)
                             ->setStockData(['is_in_stock' => 1, 'qty' => 100])
                             ->setCategoryIds([$catid])
         ;
@@ -156,29 +168,45 @@ class Import extends Command
         // ...
 
         // Associate simple products
-        $associatedProducts = [
+        $productTypes = [
             'standard',
             'foil',
         ]; // Array of associated simple product SKUs
-        foreach ($associatedProducts as $sku) {
+        foreach ($productTypes as $sku) {
             try {
                 $simpleProduct = $this->_productRepository->get($configurableProductSku.'-'.$sku);
             } catch (NoSuchEntityException $e) {
                 $simpleProduct = $this->_productFactory->create();
+                $simpleProduct->setSku($configurableProductSku.'-'.$sku)
+                              ->setAttributeSetId($configurableProduct->getDefaultAttributeSetId())
+                              ->setName($data['name'].' - '.$sku)
+                              ->setTypeId('virtual')
+                ;
             } catch (\Exception $e) {
                 $this->output->writeln($e->getMessage());
 
                 return false;
             }
-            if ($simpleProduct->getId()) {
-                $associatedProducts[] = [
-                    'id' => $simpleProduct->getId(),
-                    'qty' => 10, // Set quantity for this associated product
-                    'attribute_values' => [
-                        'type' => $sku,
-                    ],
-                ];
-            }
+            $simpleProduct->setPrice(10)
+                          ->setCategoryIds([$catid]);
+            $simpleProduct->setStockData([
+                'qty' => 100,
+                'is_in_stock' => 1,
+            ]);
+            $simpleProduct->save();
+
+            $associatedProducts[] = [
+                $simpleProduct->getId(),
+                // 'sku' => $configurableProductSku.'-'.$sku,
+                // 'qty' => 10, // Set quantity for this associated product
+                'attribute_values' => [
+                'card_type' => $sku,
+                ],
+                // 'price' => '100',
+            ];
+
+            // $simpleProduct->addData($associatedProducts);
+            // $this->_productRepository->save($simpleProduct);
         }
 
         if (0 === count($associatedProducts)) {
@@ -189,17 +217,17 @@ class Import extends Command
 
         // Assign associated products to configurable product
         $configurableProduct->setConfigurableProductsData($associatedProducts);
-        // $configurableProduct->setCustomAttributes([
-        //     'card_set' => $data['set_name'],
-        //     'mana_cost' => $data['mana_cost'],
-        //     'color_identy' => $data['color_identity'],
-        //     'collector_number' => $data['collector_number'],
-        //     'type_line' => $data['type_line'],
-        // ]);
+        // $configurableProduct->addData($associatedProducts);
 
+        // Damn transform cards
+        if ('transform' === $data['layout']) {
+            $mana = $data['card_faces'][0]['mana_cost'];
+        } else {
+            $mana = $data['mana_cost'];
+        }
         $configurableProduct->addData([
             'card_set' => $data['set_name'],
-            'mana_cost' => $data['mana_cost'],
+            'mana_cost' => $mana, // See Above
             'color_identy' => $data['color_identity'],
             'collector_number' => $data['collector_number'],
             'type_line' => $data['type_line'],
