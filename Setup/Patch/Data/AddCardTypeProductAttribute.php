@@ -49,7 +49,7 @@ class AddCardTypeProductAttribute implements DataPatchInterface, PatchRevertable
                 'type' => 'varchar',
                 'label' => 'Card Type',
                 'input' => 'select',
-                'source' => 'Vendor\ModuleName\Model\Config\Source\CardType', // Source model for options
+                // 'source' => 'SeleneSoftware\MagicCardImporter\Model\Config\Source\CardType', // Source model for options
                 'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
                 'visible' => true,
                 'required' => false,
